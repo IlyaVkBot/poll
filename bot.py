@@ -55,7 +55,7 @@ config_path = os.environ.get("CONFIG_PATH", "config.yml")
 Config(
     api_id=None,
     api_hash=None,
-    path=""
+    poll_path=""
 )
 
 
@@ -140,7 +140,7 @@ async def save_log(client, log, options, votes):
     now = datetime.now()
     name = f"ВЫБОРЫ {now.hour:02}:{now.minute:02}.txt"
 
-    with open(PATH + name, "w", encoding="UTF-8") as file:
+    with open(POLL_PATH + name, "w", encoding="UTF-8") as file:
         file.write(log)
 
     results = [[options[num].text, len(_)] for num, _ in enumerate(votes)]
@@ -263,6 +263,7 @@ async def main():
     client = Client("schizo", API_ID, API_HASH)
     await client.start()
 
+    await startpoll(client)
     aioschedule.every(30).minutes.do(startpoll, client)
 
     while True:
