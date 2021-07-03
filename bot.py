@@ -263,7 +263,6 @@ async def main():
     client = Client("schizo", API_ID, API_HASH)
     await client.start()
 
-    await startpoll(client)
     aioschedule.every(30).minutes.do(startpoll, client)
 
     while True:
