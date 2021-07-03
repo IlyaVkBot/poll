@@ -5,10 +5,10 @@ volumes:
 
 services:
   bot:
-    image: jdan_polls:dev
+    image: jdan_polls
     build: 
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     volumes:
       - polls:/var/polls
     environment:
