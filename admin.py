@@ -54,7 +54,8 @@ class Config:
 config_path = os.environ.get("CONFIG_PATH", "config.yml")
 Config(
     api_id=None,
-    api_hash=None
+    api_hash=None,
+    path=""
 )
 
 
@@ -139,7 +140,7 @@ async def save_log(client, log, options, votes):
     now = datetime.now()
     name = f"ВЫБОРЫ {now.hour:02}:{now.minute:02}.txt"
 
-    with open(name, "w", encoding="UTF-8") as file:
+    with open(PATH + name, "w", encoding="UTF-8") as file:
         file.write(log)
 
     results = [[options[num].text, len(_)] for num, _ in enumerate(votes)]

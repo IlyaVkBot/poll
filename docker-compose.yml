@@ -1,0 +1,16 @@
+version: '3'
+
+volumes:
+  polls:
+
+services:
+  bot:
+    image: jdan_polls:dev
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - polls:/var/polls
+    environment:
+      API_ID: 
+      API_HASH:
