@@ -16,19 +16,39 @@ from pyrogram.raw import functions
 from pyrogram.raw.types import InputMessagesFilterEmpty
 
 LIMIT = 600
-POLLS_IDS = [929897]
-CHAT_ID = -1001518322456
+POLLS_IDS = [1220322, 1220323]
+POLLS_IDS_REPEAT = {1087366: [1089652]}
+CHAT_ID = -1001176998310#"@katz_bots"#344316097
+POLL_CHAT_ID = -1001176998310
 
+os.environ['TZ'] = 'Europe/Moscow'
+time.tzset()
 
 BLOCKLIST = {
-    "Евгения Колташова": 1028275690,
-    "Александр": 1845006993,
+    "Ника": 815423834,
+    "Grajdanin Svoboda": 284419593,
+    "Aaron Kagan": 1191726271,
+    "Sergey Plotnikov": 1017092559,
+    "Sergey": 135066376,
+    "Георгий Тимофеевский": 98736263,
+    "Снимщиков Илья": 344316097,
+    "Аня Сапронова": 799774740,
     "Товарищ Троцкий": 1395767435,
-    "Prount Goodday": 493169260,
-    "Daniel Zakharov": 795449748,
-    "Наиль Гумбатов": 719073935,
+    "Nikolai Mareev": 127535925,
+    "Георгий Глуховский": 1575820809,
+    "Svetlana": 1601862671,
     "Vyacheslaw Udintsev": 387290727,
-    "Ever": 129618541
+    "Артем Семин": 220139586,
+    "Gottlieb Hoffmann": 365996935,
+    "Crash Bandicoot": 104489510,
+    "Бубахан Бабаев": 430270337,
+    "O_o (@SaturnZoda)": 523131471,
+    "Мэр Самары Простой": 1072318246,
+    "Enot": 380850112,
+    "Наиль Гумбатов": 719073935,
+    "Максим Лыпкань": 920397947,
+    "Dmitry": 387565571,
+    "S (@LanaNikiforowa)": 1292397566
 }
 
 
@@ -138,7 +158,7 @@ def get_calc_log(options, votes, votes_dirty):
 
 async def save_log(client, log, options, votes):
     now = datetime.now()
-    name = f"ВЫБОРЫ {now.hour:02}:{now.minute:02}.txt"
+    name = f"ВЫБОРЫ {now.hour:02}{now.minute:02}.txt"
 
     with open(POLL_PATH + name, "w", encoding="UTF-8") as file:
         file.write(log)
@@ -148,7 +168,15 @@ async def save_log(client, log, options, votes):
     caption = f"<b>ПРЕДВАРИТЕЛЬНЫЕ ИТОГИ ВЫБОРОВ НА {now.hour:02}:{now.minute:02}</b>\n\n"
 
     for num, _ in enumerate(results):
+        _[0] = _[0].replace("@", "@\u200c").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         caption += f"<i>{num + 1}.</i> <b>{_[0]}</b> <code>({_[1]})</code>\n"
+    
+    if type(POLL_CHAT_ID) is int:
+        chat_link = f"https://t.me/c/{POLL_CHAT_ID}/".replace("-100", "")
+    else:
+        chat_link = f"https://t.me/" + POLL_CHAT_ID.replace("@", "") + "/"
+
+    caption += f"\n<a href=\"{chat_link}{POLLS_IDS[0]}\">Проголосовать</a>"
 
     await client.send_media_group(CHAT_ID, [
         InputMediaDocument(name, caption=caption, parse_mode="HTML")
@@ -158,6 +186,14 @@ async def save_log(client, log, options, votes):
 
 
 async def get_full_poll(client, chat_id, poll_id):
+    chat, poll, poll_results = await get_individual_poll(client, chat_id, poll_id)
+    if poll_id in POLLS_IDS_REPEAT:
+        for poll_id_rep in POLLS_IDS_REPEAT[poll_id]:
+            chat1, poll1, poll_results_1 = await get_individual_poll(client, chat_id, poll_id_rep)
+            poll_results.votes.extend(poll_results_1.votes)
+            poll_results.users.extend(poll_results_1.users)
+    return chat, poll, poll_results
+async def get_individual_poll(client, chat_id, poll_id):
     chat = await client.resolve_peer(chat_id)
     poll = await client.get_messages(chat_id, poll_id, replies=0)
     options = poll.poll.options
@@ -263,22 +299,24 @@ async def main():
     client = Client("schizo", API_ID, API_HASH)
     await client.start()
 
-    aioschedule.every(30).minutes.do(startpoll, client)
-
+    aioschedule.every().hour.at(":0").do(startpoll, client)
+    aioschedule.every().hour.at(":30").do(startpoll, client)
+    await startpoll(client)
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(10)
 
 
 async def startpoll(client):
-    chat, poll, poll_results = await get_full_poll(client, "@katz_bots", POLLS_IDS[0])
-    # chat, poll2, poll_results2 = await get_full_poll(client, "@katz_bots", POLLS_IDS[1])
-    chat2, poll2, poll_results2 = {}, {}, {}
+    chat, poll, poll_results = await get_full_poll(client, POLL_CHAT_ID, POLLS_IDS[0])
+    #chat2, poll2, poll_results2 = {}, {}, {}
 
     poll, votes, users = prepare_one_poll(poll, poll_results)
 
-    # poll, votes, users = combine_polls(poll, poll2, poll_results,
-    #                                    poll_results2)
+    for poll_id in POLLS_IDS[1:]:
+        chat, poll2, poll_results2 = await get_full_poll(client, POLL_CHAT_ID, poll_id)
+        poll, votes, users = combine_polls(poll, poll2, poll_results,
+                                        poll_results2)
 
     votes_cleared, votes_dirty = await calc_poll_results(client,
                                                          chat,
