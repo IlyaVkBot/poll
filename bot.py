@@ -1,5 +1,6 @@
 import asyncio
 import aioschedule
+import aiosqlite
 
 import yaml
 import time
@@ -14,9 +15,10 @@ from pyrogram import Client
 from pyrogram.types import InputMediaDocument
 from pyrogram.raw import functions
 from pyrogram.raw.types import InputMessagesFilterEmpty
+from pyrogram import enums
 
 LIMIT = 600
-POLLS_IDS = [1220322, 1220323]
+POLLS_IDS = [2286996]
 POLLS_IDS_REPEAT = {1087366: [1089652]}
 CHAT_ID = -1001176998310#"@katz_bots"#344316097
 POLL_CHAT_ID = -1001176998310
@@ -24,6 +26,7 @@ POLL_CHAT_ID = -1001176998310
 os.environ['TZ'] = 'Europe/Moscow'
 time.tzset()
 
+# inactive
 BLOCKLIST = {
     "Ника": 815423834,
     "Grajdanin Svoboda": 284419593,
@@ -43,14 +46,47 @@ BLOCKLIST = {
     "Crash Bandicoot": 104489510,
     "Бубахан Бабаев": 430270337,
     "O_o (@SaturnZoda)": 523131471,
-    "Мэр Самары Простой": 1072318246,
+    "Павел Простой": 1072318246,
     "Enot": 380850112,
     "Наиль Гумбатов": 719073935,
     "Максим Лыпкань": 920397947,
-    "Dmitry": 387565571,
-    "S (@LanaNikiforowa)": 1292397566
+    "Dmitry (@Tadimon)": 387565571,
+    "S (@LanaNikiforowa)": 1292397566,
+    "Антон (@Ahnenschrein)": 136187093,
+    "Евгений Румянцев": 62411782,
+    "Faber Ion": 1543095684,
+    "Георгий Попов": 652652360,
+    "Prount Godday": 493169260,
+    "коля (@kolyaTch31)": 1128006859
 }
 
+BLOCKED = [650030828, 
+           98736263,
+           #380850112, #Енот,
+           1117540782, #йуля
+           214816035, #пачирису
+           ]
+ALLOWED = [169790456, 
+           330339396, 
+           1320606352, 
+           141058218, 
+           1237659719, 
+           # 1117540782, #йуля 
+           503696074, 
+           819865210, 
+           352356942, 
+           315838946, 
+           1813762392, 
+           135066376,
+           5112529401, #Я ем
+           443012478, #Сандри
+           1152211694, #Нет
+           1926801217, #Лыпкань
+           1926801217, #Владики
+           370385610, #Юрия Логинова
+           1017092559, #Плотников
+           1399298420, #Дзи
+           ]
 
 class Config:
     def __init__(self, config_path="config.yml", **kwargs):
@@ -80,9 +116,16 @@ Config(
 
 
 async def get_msg_count(client, chat, user):
-    user = await client.resolve_peer(user)
+    async with aiosqlite.connect("/db/bot.db") as db:
+        cursor = await db.execute( f""" SELECT SUM(message_count) as mc FROM message_counter WHERE user_id = {user} GROUP BY user_id """ )
+        row = await cursor.fetchone() 
+        try:
+            return row[0]
+        except:
+            return 0
+    return 0
 
-    return await client.send(
+    return await client.invoke(
       functions.messages.Search(peer=chat, from_id=user,
                                 q="", add_offset=0, limit=0, max_id=0, 
                                 min_id=0, hash=0, min_date=0,
@@ -91,7 +134,7 @@ async def get_msg_count(client, chat, user):
 
 
 async def get_poll(client, chat, poll_id, offset=""):
-    return await client.send(
+    return await client.invoke(
         functions.messages.GetPollVotes(peer=chat, id=poll_id, limit=10000,
                                         offset=offset))
 
@@ -104,10 +147,10 @@ async def calc_poll_results(client, chat, options, votes, users):
         user = votes[user]
 
         try:
-            count = (await get_msg_count(client, chat, user["user_id"])).count
+            count = (await get_msg_count(client, chat, user["user_id"]))
         except Exception:
             time.sleep(15)
-            count = (await get_msg_count(client, chat, user["user_id"])).count
+            count = (await get_msg_count(client, chat, user["user_id"]))
 
         user_info = users[user["user_id"]]
 
@@ -125,10 +168,9 @@ async def calc_poll_results(client, chat, options, votes, users):
                     "count": count
                 }
 
-        if count >= LIMIT:
+        if user["user_id"] not in BLOCKED and (count >= LIMIT or user["user_id"] in ALLOWED):
             for option in user["options"]:
-                if BLOCKLIST[options[option].text] != user["user_id"]:
-                    votes_cleared[option].append(voter)
+                votes_cleared[option].append(voter)
         else:
             for option in user["options"]:
                 votes_dirty[option].append(voter)
@@ -158,14 +200,14 @@ def get_calc_log(options, votes, votes_dirty):
 
 async def save_log(client, log, options, votes):
     now = datetime.now()
-    name = f"ВЫБОРЫ {now.hour:02}{now.minute:02}.txt"
+    name = f"ВЫБОРЫ" + (f"{now.hour:02}{now.minute:02}" if now.hour + now.minute > 0 else "") + ".txt"
 
     with open(POLL_PATH + name, "w", encoding="UTF-8") as file:
         file.write(log)
 
     results = [[options[num].text, len(_)] for num, _ in enumerate(votes)]
     results = sorted(results, key=lambda x: x[1])[::-1]
-    caption = f"<b>ПРЕДВАРИТЕЛЬНЫЕ ИТОГИ ВЫБОРОВ НА {now.hour:02}:{now.minute:02}</b>\n\n"
+    caption = f"<b>ПРЕДВАРИТЕЛЬНЫЕ ИТОГИ ВЫБОРОВ" + (f" НА {now.hour:02}:{now.minute:02}" if now.hour + now.minute > 0 else "") + "</b>\n\n"
 
     for num, _ in enumerate(results):
         _[0] = _[0].replace("@", "@\u200c").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -178,8 +220,8 @@ async def save_log(client, log, options, votes):
 
     caption += f"\n<a href=\"{chat_link}{POLLS_IDS[0]}\">Проголосовать</a>"
 
-    await client.send_media_group(CHAT_ID, [
-        InputMediaDocument(name, caption=caption, parse_mode="HTML")
+    await client.send_media_group("-1001176998310", [
+        InputMediaDocument(name, caption=caption, parse_mode=enums.ParseMode.HTML)
     ])
 
     os.remove(name.split(":")[0])
@@ -284,7 +326,7 @@ def prepare_one_poll(poll, results):
     votes = deepcopy(results)
     _votes = {}
     _users = {}
-
+	
     for num, vote in enumerate(results.votes):
         _votes[vote.user_id] = {
             "user_id": vote.user_id,
