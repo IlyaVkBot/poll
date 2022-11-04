@@ -19,7 +19,7 @@ from pyrogram import enums
 
 LIMIT = 300
 TIME_LIMIT = 1651870800
-POLLS_IDS = [2286996]
+POLLS_IDS = [2355149]
 POLLS_IDS_REPEAT = {1087366: [1089652]}
 CHAT_ID = -1001176998310#"@katz_bots"#344316097
 POLL_CHAT_ID = -1001176998310
@@ -120,7 +120,7 @@ async def get_msg_count(client, chat, user):
     async with aiosqlite.connect("/db/bot.db") as db:
         cursor = await db.execute( f"""SELECT SUM(message_count) as mc
                     FROM message_counter
-                    WHERE user_id = {user_id} and timestamp>={TIME_LIMIT}
+                    WHERE user_id = {user} and timestamp>={TIME_LIMIT}
                     GROUP BY user_id """ )
         row = await cursor.fetchone() 
         try:
