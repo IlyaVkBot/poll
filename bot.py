@@ -30,6 +30,11 @@ POLLS_IDS_REPEAT = json.loads(os.getenv("POLLS_IDS_REPEAT"))
 CHAT_ID = os.getenv("SEND_CHAT_ID")
 POLL_CHAT_ID = os.getenv("POLL_CHAT_ID")
 
+try: CHAT_ID = int(CHAT_ID)
+except: pass
+try: POLL_CHAT_ID = int(POLL_CHAT_ID)
+except: pass
+
 os.environ['TZ'] = 'Europe/Moscow'
 time.tzset()
 
