@@ -18,8 +18,8 @@ from pyrogram.raw.types import InputMessagesFilterEmpty
 from pyrogram import enums
 
 LIMIT = 300
-TIME_LIMIT = 1651870800
-POLLS_IDS = [2355149]
+TIME_LIMIT = 1657821600
+POLLS_IDS = [2494290]
 POLLS_IDS_REPEAT = {1087366: [1089652]}
 CHAT_ID = -1001176998310#"@katz_bots"#344316097
 POLL_CHAT_ID = -1001176998310
@@ -67,7 +67,9 @@ BLOCKED = [650030828,
            1117540782, #йуля
            214816035, #пачирису
            ]
-ALLOWED = [169790456, 
+ALLOWED = []
+
+OLD_ALLOWED= [169790456, 
            330339396, 
            1320606352, 
            141058218, 
