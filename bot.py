@@ -25,13 +25,10 @@ LIMIT = int(os.getenv("LIMIT"))
 TIME_LIMIT = int(os.getenv("TIME_LIMIT"))
 POLLS_IDS = json.loads(os.getenv("POLLS_IDS"))
 POLLS_IDS_REPEAT = json.loads(os.getenv("POLLS_IDS_REPEAT").replace("'", ""))
-CHAT_ID = os.getenv("SEND_CHAT_ID")
-POLL_CHAT_ID = os.getenv("POLL_CHAT_ID")
-
-try: CHAT_ID = int(CHAT_ID)
-except: pass
-try: POLL_CHAT_ID = int(POLL_CHAT_ID)
-except: pass
+try: CHAT_ID = int(os.getenv("SEND_CHAT_ID"))
+except: CHAT_ID = os.getenv("SEND_CHAT_ID")
+try: POLL_CHAT_ID = int(os.getenv("POLL_CHAT_ID"))
+except: POLL_CHAT_ID = os.getenv("POLL_CHAT_ID")
 
 os.environ['TZ'] = 'Europe/Moscow'
 time.tzset()
