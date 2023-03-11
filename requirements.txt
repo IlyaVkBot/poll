@@ -1,5 +1,5 @@
 aioschedule
-python-donenv
+python-dotenv
 pyrogram
 pyyaml
 tgcrypto
