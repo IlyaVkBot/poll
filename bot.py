@@ -21,8 +21,8 @@ from pyrogram import enums
 from dotenv import load_dotenv
 load_dotenv()
 
-LIMIT = os.getenv("LIMIT")
-TIME_LIMIT = os.getenv("TIME_LIMIT")
+LIMIT = int(os.getenv("LIMIT"))
+TIME_LIMIT = int(os.getenv("TIME_LIMIT"))
 POLLS_IDS = json.loads(os.getenv("POLLS_IDS"))
 POLLS_IDS_REPEAT = json.loads(os.getenv("POLLS_IDS_REPEAT").replace("'", ""))
 CHAT_ID = os.getenv("SEND_CHAT_ID")
