@@ -3,6 +3,7 @@ import aioschedule
 import aiosqlite
 
 import yaml
+import json
 import time
 import os
 
@@ -17,12 +18,15 @@ from pyrogram.raw import functions
 from pyrogram.raw.types import InputMessagesFilterEmpty
 from pyrogram import enums
 
-LIMIT = 300
-TIME_LIMIT = 1657821600
-POLLS_IDS = [2494290]
-POLLS_IDS_REPEAT = {1087366: [1089652]}
-CHAT_ID = -1001176998310#"@katz_bots"#344316097
-POLL_CHAT_ID = -1001176998310
+from dotenv import load_dotenv
+load_dotenv()
+
+LIMIT = os.getenv("LIMIT")
+TIME_LIMIT = os.getenv("TIME_LIMIT")
+POLLS_IDS = json.loads(os.getenv("POLLS_IDS"))
+POLLS_IDS_REPEAT = json.loads(os.getenv("POLLS_IDS_REPEAT"))
+CHAT_ID = os.getenv("SEND_CHAT_ID")
+POLL_CHAT_ID = os.getenv("POLL_CHAT_ID")
 
 os.environ['TZ'] = 'Europe/Moscow'
 time.tzset()
