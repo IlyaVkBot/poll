@@ -239,8 +239,8 @@ async def save_log(client, log, options, votes):
 
 async def get_full_poll(client, chat_id, poll_id):
     chat, poll, poll_results = await get_individual_poll(client, chat_id, poll_id)
-    if poll_id in POLLS_IDS_REPEAT:
-        for poll_id_rep in POLLS_IDS_REPEAT[poll_id]:
+    if str(poll_id) in POLLS_IDS_REPEAT:
+        for poll_id_rep in POLLS_IDS_REPEAT[str(poll_id)]:
             chat1, poll1, poll_results_1 = await get_individual_poll(client, chat_id, poll_id_rep)
             poll_results.votes.extend(poll_results_1.votes)
             poll_results.users.extend(poll_results_1.users)
