@@ -351,7 +351,7 @@ def prepare_one_poll(poll, results):
 
 
 async def main():
-    client = Client("db/schizo", API_ID, API_HASH)
+    client = Client("session/schizo", API_ID, API_HASH)
     await client.start()
 
     aioschedule.every().hour.at(":0").do(startpoll, client)
