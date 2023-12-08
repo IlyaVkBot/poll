@@ -23,7 +23,7 @@ load_dotenv()
 
 LIMIT = int(os.getenv("LIMIT"))
 TIME_LIMIT = int(os.getenv("TIME_LIMIT"))
-POLLS_IDS = json.loads(os.getenv("POLLS_IDS"))
+POLLS_IDS = json.loads(os.getenv("POLLS_IDS").replace("'", ""))
 POLLS_IDS_REPEAT = json.loads(os.getenv("POLLS_IDS_REPEAT").replace("'", ""))
 try: CHAT_ID = int(os.getenv("SEND_CHAT_ID"))
 except: CHAT_ID = os.getenv("SEND_CHAT_ID")
