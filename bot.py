@@ -129,7 +129,7 @@ async def get_msg_count(client, chat, user):
     async with aiosqlite.connect("db/bot.db") as db:
         cursor = await db.execute( f"""SELECT SUM(message_count) as mc
                     FROM message_counter
-                    WHERE user_id = {user} and timestamp>={TIME_LIMIT}
+                    WHERE user_id = {user} and timestamp>={TIME_LIMIT} and message_text != '' and message_text is not null and (is_forward is null or is_forward = false)
 		    GROUP BY user_id""" )
         row = await cursor.fetchone() 
         try:
