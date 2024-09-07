@@ -186,9 +186,9 @@ async def calc_poll_results(client, chat, options, votes, users):
                     "count": count
                 }
 
-	options = set()
-	for option in user["options"]:
-	    options.add(option)
+        options = set()
+        for option in user["options"]:
+            options.add(option)
 
         if user["user_id"] not in BLOCKED and (count >= LIMIT or user["user_id"] in ALLOWED):
             for option in options:
