@@ -155,9 +155,14 @@ async def get_poll(client, chat, poll_id, offset=""):
 async def calc_poll_results(client, chat, options, votes, users):
     votes_cleared = [[] for _ in range(len(options))]
     votes_dirty = [[] for _ in range(len(options))]
+    users_ids = set()
 
     for user in votes:
         user = votes[user]
+        
+        if user["user_id"] in users_ids:
+            continue
+        users_ids.add(user["user_id"])
 
         try:
             count = (await get_msg_count(client, chat, user["user_id"]))
